@@ -1,0 +1,150 @@
+/* 전체 컨테이너 스타일 */
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f0f2f5;
+  padding: 0 20px; /* 좌우 여백 추가 */
+  box-sizing: border-box;
+  overflow: auto; /* 스크롤 방지 */
+}
+
+/* 폼 래퍼 스타일 (form을 감싸는 div) */
+.form-wrapper {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* 내용들이 위 아래로 고르게 배치되도록 */
+  height: 100%;
+}
+
+/* 제목 스타일 */
+h2 {
+  text-align: center;
+  margin-bottom: -20px; 
+  font-size: 22px;
+  color: #333;
+}
+
+/* form 요소 스타일 */
+form {
+  margin-top: 0; /* form 상단 마진을 제거하여 제목과의 간격을 줄입니다. */
+}
+
+/* 입력 필드 그룹 스타일 */
+.form-group {
+  margin-top: 0; /* 첫 번째 입력 필드와 제목 간격을 좁히기 위해 상단 마진을 제거 */
+  margin-bottom: 15px;
+}
+
+/* 메시지 표시 컨테이너 */
+.message-container {
+  text-align: center;
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #4CAF50; /* 성공 메시지에 녹색 텍스트 */
+}
+
+/* 입력 필드 스타일 */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="tel"] {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+/* 주요 관심 분야 선택 박스 스타일 */
+.interest-title {
+  font-size: 18px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.interest-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.interest-item {
+  padding: 10px;
+  background-color: #f5f5f5;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.interest-item:hover {
+  background-color: #e2e2e2;
+}
+
+.interest-item.selected {
+  background-color: #4CAF50;
+  color: white;
+}
+
+/* 버튼 스타일 */
+button {
+  width: 100%;
+  padding: 12px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+/* 링크 스타일 (로그인 페이지로 이동) */
+.toggle-link {
+  text-decoration: none;
+  color: #007BFF;
+  font-size: 14px;
+  display: block;
+  text-align: center;
+  margin-top: 20px;  /* 위쪽 간격 */
+  cursor: pointer;  /* 커서를 손 모양으로 */
+}
+
+.toggle-link:hover {
+  text-decoration: underline;
+}
+
+/* 라벨 스타일 */
+label {
+  font-size: 14px;  /* 라벨 크기 수정 */
+  color: black; /* 검은색으로 변경 */
+  margin-bottom: 5px;
+  display: block;
+  text-align: left; /* 왼쪽 정렬 */
+}
+
+/* 프로필 사진 input 스타일 */
+input[type="file"] {
+  padding: 5px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+/* 맨 아래 로그인으로 가기 링크와 다른 요소들 간의 여백 */
+.form-buttons {
+  margin-top: -10px; 
+  text-align: center;
+  flex-shrink: 0; 
+}
