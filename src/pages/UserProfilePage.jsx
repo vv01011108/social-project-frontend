@@ -7,8 +7,9 @@ const UserProfilePage = () => {
   const { userId } = useParams();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [requestStatus, setRequestStatus] = useState(null); // 상태: PENDING, ACCEPTED, REJECTED
+  const [requestStatus, setRequestStatus] = useState(null); // 상태: PENDING, ACCEPTED, REJECTED, RECEIVED
   const [senderId, setSenderId] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -16,7 +17,7 @@ const UserProfilePage = () => {
       try {
         const [loggedInResponse, userProfileResponse] = await Promise.all([
           axios.get(`${import.meta.env.VITE_API_URL}/api/users/me`, { withCredentials: true }),
-          axios.get(`${import.meta.env.VITE_API_URL}/api/users/${userId}`)
+          axios.get(`${import.meta.env.VITE_API_URL}/api/users/${userId}`, { withCredentials: true })
         ]);
 
         setSenderId(loggedInResponse.data.id);
@@ -27,9 +28,11 @@ const UserProfilePage = () => {
           `${import.meta.env.VITE_API_URL}/api/friend-requests/status`,
           { params: { senderId: loggedInResponse.data.id, receiverId: userId }, withCredentials: true }
         );
+
         setRequestStatus(friendRequestResponse.data.status);
       } catch (err) {
         console.error('데이터를 가져오는 중 오류가 발생했습니다:', err);
+        setErrorMessage('데이터를 가져오는 중 문제가 발생했습니다. 다시 시도해주세요.');
       } finally {
         setLoading(false);
       }
@@ -41,6 +44,7 @@ const UserProfilePage = () => {
   // 친구 추가 요청 처리
   const handleAddFriend = async () => {
     try {
+      setErrorMessage(null); // 오류 메시지 초기화
       await axios.post(
         `${import.meta.env.VITE_API_URL}/api/friend-requests`,
         null,
@@ -49,33 +53,9 @@ const UserProfilePage = () => {
       setRequestStatus('PENDING');
     } catch (err) {
       console.error('친구 추가 요청 중 오류가 발생했습니다:', err);
-    }
-  };
-
-  // 친구 요청 취소 처리
-  const handleCancelRequest = async () => {
-    try {
-      await axios.delete(
-        `${import.meta.env.VITE_API_URL}/api/friend-requests`,
-        { params: { senderId, receiverId: userId }, withCredentials: true }
+      setErrorMessage(
+        err.response?.data?.message || '친구 추가 요청 중 문제가 발생했습니다. 다시 시도해주세요.'
       );
-      setRequestStatus(null);
-    } catch (err) {
-      console.error('친구 요청 취소 중 오류가 발생했습니다:', err);
-    }
-  };
-
-  // 친구 요청 수락 처리
-  const handleAcceptRequest = async () => {
-    try {
-      await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/friend-requests/accept`,
-        null,
-        { params: { senderId, receiverId: userId }, withCredentials: true }
-      );
-      setRequestStatus('ACCEPTED');
-    } catch (err) {
-      console.error('친구 요청 수락 중 오류가 발생했습니다:', err);
     }
   };
 
@@ -97,15 +77,15 @@ const UserProfilePage = () => {
       <p><strong>직장/학교:</strong> {user.workplace}</p>
       <p><strong>전화번호:</strong> {user.phoneNumber}</p>
 
-      {/* 친구 상태 표시 및 버튼 */}
-      {requestStatus === 'PENDING' && (
-        <>
-          <p>친구 요청 대기 중...</p>
-          <button onClick={handleCancelRequest} className="cancel-friend-request-button">
-            요청 취소
-          </button>
-        </>
-      )}
+      {/* 오류 메시지 표시 */}
+      {errorMessage && <p className="error-message">{errorMessage}</p>}
+
+      {/* 버튼을 모든 상태에서 띄우도록 수정 */}
+      <button onClick={handleAddFriend} className="add-friend-button">
+        친구 추가
+      </button>
+
+      {requestStatus === 'PENDING' && <p>친구 요청 대기 중...</p>}
 
       {requestStatus === 'ACCEPTED' && <p>이미 친구입니다!</p>}
 
@@ -116,18 +96,6 @@ const UserProfilePage = () => {
             다시 요청
           </button>
         </p>
-      )}
-
-      {!requestStatus && (
-        <button onClick={handleAddFriend} className="add-friend-button">
-          친구 추가
-        </button>
-      )}
-
-      {requestStatus === 'RECEIVED' && (
-        <button onClick={handleAcceptRequest} className="accept-friend-request-button">
-          친구 요청 수락
-        </button>
       )}
     </div>
   );

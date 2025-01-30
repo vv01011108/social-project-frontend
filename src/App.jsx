@@ -17,7 +17,7 @@ const App = () => {
         <Route path="/main" element={<MainPage />} />
         <Route path="/edit-profile/:userId" element={<EditProfilePage />} />
         <Route path="/user/:userId" element={<UserProfilePage />} />
-        <Route path="/friend-requests" element={<FriendRequests />} /> {/* 기존 FriendRequests 페이지 추가 */}
+        <Route path="/friend-requests/:userId" element={<FriendRequests />} /> {/* 기존 FriendRequests 페이지 추가 */}
       </Routes>
     </Router>
   );

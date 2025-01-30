@@ -7,12 +7,13 @@ const MainPage = () => {
   const [user, setUser] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);  // 초기값을 빈 배열로 설정
   const [noResults, setNoResults] = useState(false);
   const searchResultsRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
+  // 사용자 정보 가져오기
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
@@ -33,11 +34,12 @@ const MainPage = () => {
     fetchUserInfo();
   }, [navigate, location.state]);
 
+  // 클릭 외부에서 검색창 닫기
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (searchResultsRef.current && !searchResultsRef.current.contains(e.target) && !e.target.closest('.search-input')) {
         setSearchQuery('');
-        setSearchResults([]);
+        setSearchResults([]);  // 검색 결과를 빈 배열로 설정
         setNoResults(false);
       }
     };
@@ -48,36 +50,52 @@ const MainPage = () => {
     };
   }, []);
 
+  // 검색 처리
   const handleSearch = async (e) => {
     e.preventDefault();
     if (searchQuery.trim() === '') {
-      setSearchResults([]);
+      setSearchResults([]); // 검색어가 없으면 결과를 빈 배열로 설정
       setNoResults(false);
       return;
     }
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/users/search?name=${searchQuery}`);
-      if (response.data.length === 0) {
-        setSearchResults([]);
-        setNoResults(true);
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/users/search?name=${searchQuery}`,
+        { withCredentials: true } // withCredentials 추가
+      );
+      console.log('검색 결과:', response.data); // 검색 결과 로그 출력
+  
+      if (Array.isArray(response.data)) {
+        if (response.data.length === 0) {
+          setSearchResults([]); // 검색 결과가 없으면 빈 배열로 설정
+          setNoResults(true);
+        } else {
+          setSearchResults(response.data); // 검색 결과를 그대로 설정
+          setNoResults(false); // 결과가 있으면 noResults를 false로 설정
+        }
       } else {
-        setSearchResults(response.data);
-        setNoResults(false);
+        setSearchResults([]); // 배열이 아니면 빈 배열로 설정
+        setNoResults(true);
       }
     } catch (err) {
       console.error('사용자 검색 실패:', err);
+      setSearchResults([]); // 에러 발생 시 빈 배열로 설정
       setNoResults(true);
     }
   };
+  
 
+  // 프로필 수정 클릭
   const handleEditClick = () => {
     navigate(`/edit-profile/${user.id}`);
   };
 
+  // 다른 사용자 프로필 클릭
   const handleUserClick = (userId) => {
     navigate(`/user/${userId}`);
   };
 
+  // 로그아웃 처리
   const handleLogout = async () => {
     try {
       await axios.post(`${import.meta.env.VITE_API_URL}/api/users/logout`, {}, { withCredentials: true });
@@ -87,8 +105,11 @@ const MainPage = () => {
     }
   };
 
+  // 친구 요청 보기
   const goToFriendRequests = () => {
-    navigate('/friend-requests');
+    if (user) {
+    navigate(`/friend-requests/${user.id}`);
+  }
   };
 
   return (
@@ -101,14 +122,16 @@ const MainPage = () => {
           type="text"
           placeholder="이름으로 검색"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+          }}
           className="search-input"
         />
         <button className="search-button" onClick={handleSearch}>검색</button>
       </div>
 
       {/* 검색 결과 */}
-      {searchResults.length > 0 && (
+      {Array.isArray(searchResults) && searchResults.length > 0 && (
         <div className="search-results" ref={searchResultsRef}>
           <h3>검색 결과</h3>
           <ul>
