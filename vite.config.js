@@ -9,7 +9,8 @@ export default defineConfig({
     port: 3000, // 로컬 서버 포트
     proxy: {
       '/api': {
-        target: 'https://3d78-211-216-41-180.ngrok-free.app', // ngrok URL
+        //target: 'https://3d78-211-216-41-180.ngrok-free.app', // ngrok URL
+        target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
       },

@@ -31,9 +31,10 @@ const SignupPage = () => {
         `${import.meta.env.VITE_API_URL}/api/users/signup`,
         formData,
         {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
+          withCredentials: true,
+          // headers: {
+          //   'Content-Type': 'multipart/form-data',
+          // },
         }
       );
 

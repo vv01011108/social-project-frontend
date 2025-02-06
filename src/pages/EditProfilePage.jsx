@@ -12,6 +12,7 @@ const EditProfilePage = () => {
   const [workplace, setWorkplace] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [photo, setPhoto] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -41,6 +42,7 @@ const EditProfilePage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMessage('');
 
     const formData = new FormData();
     formData.append('name', name);
@@ -53,17 +55,16 @@ const EditProfilePage = () => {
     try {
       await axios.put(`${import.meta.env.VITE_API_URL}/api/users/${userId}/edit`, formData, {
         withCredentials: true,
-        headers: { 'Content-Type': 'multipart/form-data' },
+        // headers: { 'Content-Type': 'multipart/form-data' }
       });
       alert('프로필이 성공적으로 업데이트되었습니다.');
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/users/${userId}`, {
-        withCredentials: true,
-      });
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/users/${userId}`);
       const userData = response.data;
       setUser(userData);
       navigate('/main', { state: { updateUser: userData } });
     } catch (error) {
       console.error('프로필 업데이트 실패:', error);
+      setErrorMessage('프로필 업데이트에 실패했습니다. 다시 시도해주세요.');
     }
   };
 

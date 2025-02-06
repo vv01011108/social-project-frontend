@@ -1,47 +1,56 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './FriendRequests.css';
+import { useParams } from 'react-router-dom';
 
 const FriendRequests = () => {
-  const [friendRequests, setFriendRequests] = useState([]);
-  const [userId, setUserId] = useState(null); // 로그인된 사용자 ID를 저장할 state
+  const { userId } = useParams(); // URL 파라미터에서 userId를 받음
+  const [friendRequests, setFriendRequests] = useState([]); // 친구 요청 목록 상태
+  const [loading, setLoading] = useState(true); // 로딩 상태
 
+  // 친구 요청 목록을 받아오는 useEffect
   useEffect(() => {
-    // 로그인한 사용자 ID를 받아오는 방법에 따라 userId를 설정
-    const currentUserId = localStorage.getItem('userId'); // localStorage에서 userId 가져오기
-    setUserId(currentUserId);
-
-    if (currentUserId) {
+    if (userId) {
       const fetchFriendRequests = async () => {
         try {
-          const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/friend-requests/pending/${currentUserId}`, {
-            withCredentials: true, // 세션 사용
+          const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/friend-requests/pending/${userId}`, {
+            withCredentials: true,
           });
-          setFriendRequests(response.data); // 받은 요청 목록 설정
+          if (Array.isArray(response.data.data)) {
+            setFriendRequests(response.data.data); // 친구 요청 목록 설정
+          } else {
+            console.error('친구 요청 데이터가 배열이 아닙니다.');
+          }
         } catch (err) {
           console.error('친구 요청 가져오기 실패:', err);
+        } finally {
+          setLoading(false);
         }
       };
 
       fetchFriendRequests();
     }
-  }, []); // 컴포넌트 마운트 시에만 실행
+  }, [userId]);
 
+  // 친구 요청 수락 함수
   const handleAcceptRequest = async (requestId) => {
     try {
-      // 친구 요청 수락
-      await axios.put(`${import.meta.env.VITE_API_URL}/api/friend-requests/${requestId}/accept`, {}, { withCredentials: true });
-      setFriendRequests(friendRequests.filter(request => request.id !== requestId)); // 수락한 요청 삭제
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/friend-requests/${requestId}/accept`, null, {
+        withCredentials: true,
+      });
+      setFriendRequests((prevRequests) => prevRequests.filter(request => request.id !== requestId));
     } catch (err) {
       console.error('친구 요청 수락 실패:', err);
     }
   };
 
+  // 친구 요청 삭제 함수
   const handleDeleteRequest = async (requestId) => {
     try {
-      // 친구 요청 삭제
-      await axios.delete(`${import.meta.env.VITE_API_URL}/api/friend-requests/${requestId}`, { withCredentials: true });
-      setFriendRequests(friendRequests.filter(request => request.id !== requestId)); // 삭제된 요청 목록에서 제거
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/friend-requests/${requestId}`, {
+        withCredentials: true,
+      });
+      setFriendRequests((prevRequests) => prevRequests.filter(request => request.id !== requestId));
     } catch (err) {
       console.error('친구 요청 삭제 실패:', err);
     }
@@ -50,7 +59,9 @@ const FriendRequests = () => {
   return (
     <div className="friend-requests-container">
       <h2>친구 요청</h2>
-      {friendRequests.length === 0 ? (
+      {loading ? (
+        <p>로딩 중...</p>
+      ) : friendRequests.length === 0 ? (
         <p>받은 친구 요청이 없습니다.</p>
       ) : (
         <ul>

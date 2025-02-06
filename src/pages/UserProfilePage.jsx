@@ -16,8 +16,12 @@ const UserProfilePage = () => {
     const fetchData = async () => {
       try {
         const [loggedInResponse, userProfileResponse] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_API_URL}/api/users/me`, { withCredentials: true }),
-          axios.get(`${import.meta.env.VITE_API_URL}/api/users/${userId}`, { withCredentials: true })
+          axios.get(`${import.meta.env.VITE_API_URL}/api/users/me`, {
+            withCredentials: true,
+          }),
+          axios.get(`${import.meta.env.VITE_API_URL}/api/users/${userId}`, {
+            withCredentials: true,
+          })
         ]);
 
         setSenderId(loggedInResponse.data.id);
@@ -26,7 +30,7 @@ const UserProfilePage = () => {
         // 친구 요청 상태 가져오기
         const friendRequestResponse = await axios.get(
           `${import.meta.env.VITE_API_URL}/api/friend-requests/status`,
-          { params: { senderId: loggedInResponse.data.id, receiverId: userId }, withCredentials: true }
+          { params: { senderId: loggedInResponse.data.id, receiverId: userId }}
         );
 
         setRequestStatus(friendRequestResponse.data.status);
@@ -45,12 +49,17 @@ const UserProfilePage = () => {
   const handleAddFriend = async () => {
     try {
       setErrorMessage(null); // 오류 메시지 초기화
-      await axios.post(
+      const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/friend-requests`,
-        null,
-        { params: { senderId, receiverId: userId }, withCredentials: true }
+        { senderId: senderId,
+          receiverId: userId },
+        {withCredentials: true}
       );
-      setRequestStatus('PENDING');
+  
+      // 응답에 따라 requestStatus 상태 업데이트
+      if (response.data.status === 'success') {
+        setRequestStatus('PENDING');  // 친구 요청이 성공적으로 보내졌을 때
+      }
     } catch (err) {
       console.error('친구 추가 요청 중 오류가 발생했습니다:', err);
       setErrorMessage(
@@ -58,6 +67,8 @@ const UserProfilePage = () => {
       );
     }
   };
+  
+  
 
   if (loading) {
     return <p>로딩 중...</p>;
