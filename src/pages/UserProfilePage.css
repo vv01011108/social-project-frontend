@@ -53,11 +53,8 @@
   text-align: center;
 }
 
-/* 버튼 스타일 */
-.add-friend-button,
-.cancel-friend-request-button,
-.accept-friend-request-button,
-.reject-friend-request-button {
+/* 버튼 공통 스타일 */
+.friend-button {
   display: inline-block;
   padding: 10px 20px;
   margin: 10px 5px;
@@ -68,6 +65,7 @@
   transition: background-color 0.3s ease;
 }
 
+/* 친구 추가 버튼 */
 .add-friend-button {
   background-color: #4caf50;
   color: white;
@@ -77,6 +75,7 @@
   background-color: #45a049;
 }
 
+/* 친구 요청 취소 버튼 */
 .cancel-friend-request-button {
   background-color: #f44336;
   color: white;
@@ -86,20 +85,64 @@
   background-color: #e53935;
 }
 
-.accept-friend-request-button {
-  background-color: #2196f3;
+/* 친구 요청 대기 중 상태에서 버튼 비활성화 */
+.friend-button:disabled {
+  background-color: #ccc !important;
+  color: #666 !important;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* 친구 요청 대기 중 스타일 */
+.add-friend-button.pending {
+  background-color: #ff9800;
+  cursor: not-allowed;
+}
+
+.add-friend-button.pending:hover {
+  background-color: #f57c00;
+}
+
+/* 친구 요청 대기 중 상태에서 취소 버튼 스타일 */
+.cancel-friend-request-button.pending {
+  background-color: #e53935;
+  cursor: not-allowed;
+}
+
+.cancel-friend-request-button.pending:hover {
+  background-color: #d32f2f;
+}
+
+/* 친구가 이미 추가된 상태일 때 버튼 스타일 */
+.friend-status-button {
+  background-color: #2196f3; /* 파란색으로 친구 상태 표시 */
   color: white;
 }
 
-.accept-friend-request-button:hover {
+.friend-status-button:hover {
   background-color: #1976d2;
 }
 
-.reject-friend-request-button {
-  background-color: #ff9800;
-  color: white;
+.friend-status-button:disabled {
+  background-color: #bbb;
+  cursor: not-allowed;
 }
 
-.reject-friend-request-button:hover {
-  background-color: #f57c00;
+/* 친구 상태 메시지 */
+.friend-status-text {
+  font-size: 16px;
+  color: #333;
+  text-align: center;
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+/* 친구 요청 대기 중 상태에서 버튼 스타일 */
+.pending {
+  background-color: #ff9800; /* 노란색 */
+  cursor: not-allowed;
+}
+
+.pending:hover {
+  background-color: #f57c00; /* 더 어두운 노란색 */
 }

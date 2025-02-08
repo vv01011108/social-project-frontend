@@ -241,15 +241,41 @@
   font-size: 14px;
   padding: 0;
   margin-top: 10px;
-  /* hover 효과 제거 */
 }
 
 .logout-link:hover {
-  /* 마우스 오버 시 스타일을 없앰 */
   text-decoration: underline;
   color: #007bff;
   background: none;
   transform: none;
 }
 
+/* ranking-button 스타일 */
+.ranking-button {
+  padding: 10px 20px;
+  background-color: #ff6f61;  /* 밝은 빨간색 배경 */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  width: 100%;
+  max-width: 180px;  /* 버튼의 최대 너비 설정 */
+  margin-top: 20px;  /* 위쪽 여백 설정 */
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* ranking-button hover 효과 */
+.ranking-button:hover {
+  background-color: #e25746;  /* 어두운 빨간색으로 변화 */
+  transform: scale(1.05);  /* 마우스 오버 시 크기 커짐 */
+}
+
+/* ranking-button:focus 효과 */
+.ranking-button:focus {
+  outline: none;  /* 포커스 시 외곽선 제거 */
+  box-shadow: 0 0 0 4px rgba(255, 111, 97, 0.5); /* 포커스 시 오렌지 그림자 */
+}
 

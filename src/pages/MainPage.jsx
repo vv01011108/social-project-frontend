@@ -16,19 +16,12 @@ const MainPage = () => {
   // 사용자 정보 가져오기
   useEffect(() => {
     const fetchUserInfo = async () => {
-      // console.log(localStorage.getItem('token'));
-
       try {
         if (location.state && location.state.updateUser) {
           setUser(location.state.updateUser);
         } else {
-          // const token = localStorage.getItem('token'); // JWT 토큰을 가져옵니다
-          
           const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/users/me`, {
             withCredentials: true,
-            // headers: {
-            //   Authorization: `Bearer ${token}` // Authorization 헤더에 토큰을 추가
-            // }
           });
           
           setUser(response.data);
@@ -68,19 +61,13 @@ const MainPage = () => {
     }
 
     try {
-      // const token = localStorage.getItem('token'); // JWT 토큰을 가져옵니다
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/users/search?name=${searchQuery}`,
         {
           withCredentials: true,
-          // headers: {
-          //   Authorization: `Bearer ${token}` // Authorization 헤더에 토큰을 추가
-          // }
         }
       );
 
-      console.log('검색 결과:', response.data); // 검색 결과 로그 출력
-  
       if (Array.isArray(response.data)) {
         if (response.data.length === 0) {
           setSearchResults([]); // 검색 결과가 없으면 빈 배열로 설정
@@ -117,21 +104,21 @@ const MainPage = () => {
     }
   };
 
+  // 랭킹 보기 페이지로 이동
+  const goToRankingPage = () => {
+    navigate(`/ranking/${user.id}`);
+  };
+
   // 로그아웃 처리
   const handleLogout = async () => {
     try {
-      // const token = localStorage.getItem('token'); // JWT 토큰을 가져옵니다
       await axios.post(
         `${import.meta.env.VITE_API_URL}/api/users/logout`,
         {},
         {
           withCredentials: true,
-          // headers: {
-          //   Authorization: `Bearer ${token}` // Authorization 헤더에 토큰을 추가
-          // }
         }
       );
-      // localStorage.removeItem('token'); // 로그아웃 시 토큰 삭제
       navigate('/login');
     } catch (err) {
       console.error('로그아웃 실패:', err);
@@ -207,6 +194,7 @@ const MainPage = () => {
 
           <button className="edit-profile-button" onClick={handleEditClick}>프로필 수정</button>
           <button className="friend-requests-button" onClick={goToFriendRequests}>친구 요청 보기</button>
+          <button className="ranking-button" onClick={goToRankingPage}>이웃 랭킹 보기</button>
           <button className="logout-link" onClick={handleLogout}>로그아웃</button>
         </div>
       )}
