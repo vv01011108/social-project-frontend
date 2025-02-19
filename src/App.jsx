@@ -5,7 +5,7 @@ import SignupPage from './pages/SignupPage';
 import MainPage from './pages/MainPage';
 import EditProfilePage from './pages/EditProfilePage';
 import UserProfilePage from './pages/UserProfilePage'; 
-import FriendRequests from './pages/FriendRequests'; 
+import FollowListPage from './pages/FollowListPage'; 
 import RankingPage from './pages/RankingPage'; // 랭킹 페이지 추가
 
 const App = () => {
@@ -18,7 +18,7 @@ const App = () => {
         <Route path="/main" element={<MainPage />} />
         <Route path="/edit-profile/:userId" element={<EditProfilePage />} />
         <Route path="/user/:userId" element={<UserProfilePage />} />
-        <Route path="/friend-requests/:userId" element={<FriendRequests />} />
+        <Route path="/FollowListPage/:userId" element={<FollowListPage />} />
         <Route path="/ranking/:userId" element={<RankingPage />} /> {/* 랭킹 페이지 추가 */}
       </Routes>
     </Router>

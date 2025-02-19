@@ -7,11 +7,11 @@ const UserProfilePage = () => {
   const { userId } = useParams();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [requestStatus, setRequestStatus] = useState(null); // 상태: PENDING, ACCEPTED, REJECTED, NONE
+  const [followStatus, setFollowStatus] = useState(false); // 내가 상대를 팔로우 상태
+  const [isFollowedByUser, setIsFollowedByUser] = useState(false); // 상대가 나를 팔로우 상태
   const [senderId, setSenderId] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [requestId, setRequestId] = useState(null); // 요청 ID를 저장
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -25,36 +25,15 @@ const UserProfilePage = () => {
         setSenderId(loggedInResponse.data.id);
         setUser(userProfileResponse.data);
 
-        // 로컬 스토리지에서 상태 및 요청 ID 가져오기
-        const storedStatus = localStorage.getItem(`friendRequestStatus-${userId}`);
-        const storedRequestId = localStorage.getItem(`friendRequestId-${userId}`);
+        // 팔로우 상태 확인
+        const followResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/follow/status`, {
+          params: { followerId: loggedInResponse.data.id, followeeId: userId },
+          withCredentials: true
+        });
 
-        if (storedStatus) {
-          setRequestStatus(storedStatus);
-        } else {
-          const checkRequestStatus = async (senderId, receiverId) => {
-            try {
-              const response = await axios.get(
-                `${import.meta.env.VITE_API_URL}/api/friend-requests/status`,
-                { params: { senderId, receiverId } }
-              );
-              return response.data.status;
-            } catch (err) {
-              return null;
-            }
-          };
-
-          let status = await checkRequestStatus(loggedInResponse.data.id, userId);
-          if (!status) {
-            status = await checkRequestStatus(userId, loggedInResponse.data.id);
-          }
-
-          setRequestStatus(status);
-        }
-
-        if (storedRequestId) {
-          setRequestId(storedRequestId); // ✅ 로컬 스토리지에서 요청 ID 불러오기 추가
-        }
+        setFollowStatus(followResponse.data.data.isFollowing); // 내가 상대를 팔로우 중인지 여부
+        setIsFollowedByUser(followResponse.data.data.isFollowedByUser); // 상대가 나를 팔로우 중인지 여부
+        
       } catch (err) {
         console.error('사용자 데이터를 가져오는 중 오류가 발생했습니다:', err);
         setErrorMessage('사용자 데이터를 가져오는 중 문제가 발생했습니다. 다시 시도해주세요.');
@@ -66,53 +45,97 @@ const UserProfilePage = () => {
     fetchData();
   }, [userId]);
 
-  // 친구 추가 요청 처리
-  const handleAddFriend = async () => {
-    if (isProcessing || senderId === null || requestStatus === 'ACCEPTED') return;
+  // 팔로우 상태를 다시 받아오는 함수
+  const fetchFollowStatus = async () => {
+    try {
+      const followResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/follow/status`, {
+        params: { followerId: senderId, followeeId: Number(userId) },
+        withCredentials: true
+      });
+
+      setFollowStatus(followResponse.data.data.isFollowing); // 내가 상대를 팔로우 중인지 여부
+      setIsFollowedByUser(followResponse.data.data.isFollowedByUser); // 상대가 나를 팔로우 중인지 여부
+      
+    } catch (err) {
+      console.error('팔로우 상태를 가져오는 중 오류가 발생했습니다:', err.response);
+    }
+  };
+
+  // 팔로우 처리
+  const handleFollow = async () => {
+    if (isProcessing) return;
     setIsProcessing(true);
     setErrorMessage(null);
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/friend-requests`,
-        { senderId: senderId, receiverId: userId },
+        `${import.meta.env.VITE_API_URL}/api/follow`,
+        { followerId: senderId, followeeId: Number(userId) },
         { withCredentials: true }
       );
 
       if (response.data.status === 'success') {
-        setRequestStatus('PENDING');
-        setRequestId(response.data.data.id); // ✅ 친구 요청 ID 저장
-        localStorage.setItem(`friendRequestStatus-${userId}`, 'PENDING');
-        localStorage.setItem(`friendRequestId-${userId}`, response.data.data.id);
+        // 팔로우 상태 갱신 후 다시 상태를 가져오기
+        await fetchFollowStatus();
       }
+
     } catch (err) {
-      console.error('친구 추가 요청 중 오류가 발생했습니다:', err);
-      setErrorMessage(err.response?.data?.message || '친구 추가 요청 중 문제가 발생했습니다. 다시 시도해주세요.');
+      console.error('팔로우 중 오류가 발생했습니다:', err);
+      setErrorMessage('팔로우 중 문제가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // 친구 요청 취소 처리
-  const handleCancelFriendship = async () => {
-    if (isProcessing || senderId === null || requestStatus !== 'PENDING' || requestId === null) return;
+  // 언팔로우 처리
+  const handleUnfollow = async (targetUserId) => {
+    if (isProcessing) return;
     setIsProcessing(true);
     setErrorMessage(null);
 
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL}/api/friend-requests/${requestId}`, {
-        withCredentials: true,
-      });
+      await axios.delete(
+        `${import.meta.env.VITE_API_URL}/api/follow`,
+        {
+          params: { userId: senderId, targetUserId: userId },
+          withCredentials: true
+        }
+      );
+      console.log("타켓 아이디", targetUserId);
+      console.log("현재 사용자 아이디", senderId);
+      
 
-      // 친구 취소 후 상태 초기화 및 UI 갱신
-      setRequestStatus(null);
-      setRequestId(null);
-      localStorage.removeItem(`friendRequestStatus-${userId}`);
-      localStorage.removeItem(`friendRequestId-${userId}`); // ✅ 친구 요청 ID도 삭제
-
+      // 언팔로우 상태 갱신 후 다시 상태를 가져오기
+      await fetchFollowStatus();
     } catch (err) {
-      console.error('친구 취소 중 오류가 발생했습니다:', err);
-      setErrorMessage('친구 취소 중 문제가 발생했습니다. 다시 시도해주세요.');
+      console.error('언팔로우 중 오류가 발생했습니다:', err);
+
+      setErrorMessage('언팔로우 중 문제가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // 맞팔로우 처리
+  const handleMutualFollow = async () => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/follow/mutual`,
+        { followerId: userId, followeeId: senderId },
+        { withCredentials: true }
+      );
+
+      if (response.data.status === 'success') {
+        // 맞팔로우 후 상태 갱신
+        await fetchFollowStatus();
+      }
+    } catch (err) {
+      console.error('맞팔로우 중 오류가 발생했습니다:', err);
+      setErrorMessage('맞팔로우 중 문제가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setIsProcessing(false);
     }
@@ -138,27 +161,25 @@ const UserProfilePage = () => {
 
       {errorMessage && <p className="error-message">{errorMessage}</p>}
 
-      {requestStatus === 'ACCEPTED' ? (
-        <div>
-          <p>서로 친구입니다.</p>
-          <button onClick={handleCancelFriendship} className="cancel-friend-button" disabled={isProcessing}>
-            친구 취소
-          </button>
-        </div>
-      ) : requestStatus === 'PENDING' ? (
-        <div>
-          <button className="add-friend-button" disabled>
-            친구 요청 대기 중...
-          </button>
-          <button onClick={handleCancelFriendship} className="cancel-friend-button" disabled={isProcessing}>
-            친구 요청 취소
-          </button>
-        </div>
+      {/* 팔로우/언팔로우/맞팔로우 버튼 */}
+      {followStatus && isFollowedByUser ? (
+        <button className="mutual-follow-button" disabled>
+          서로 팔로우 중입니다
+        </button>
+      ) : isFollowedByUser ? (
+        <button onClick={handleMutualFollow} className="follow-button" disabled={isProcessing}>
+          맞팔로우 하기
+        </button>
+      ) : followStatus ? (
+        <button onClick={() => handleUnfollow(userId)} className="unfollow-button" disabled={isProcessing}>
+          언팔로우
+        </button>
       ) : (
-        <button onClick={handleAddFriend} className="add-friend-button" disabled={isProcessing}>
-          친구 추가
+        <button onClick={handleFollow} className="follow-button" disabled={isProcessing}>
+          팔로우
         </button>
       )}
+
     </div>
   );
 };

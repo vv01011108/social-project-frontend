@@ -98,9 +98,9 @@ const MainPage = () => {
   };
 
   // 친구 요청 보기
-  const goToFriendRequests = () => {
+  const goToFollowListPage = () => {
     if (user) {
-      navigate(`/friend-requests/${user.id}`);
+      navigate(`/FollowListPage/${user.id}`);
     }
   };
 
@@ -193,7 +193,7 @@ const MainPage = () => {
           )}
 
           <button className="edit-profile-button" onClick={handleEditClick}>프로필 수정</button>
-          <button className="friend-requests-button" onClick={goToFriendRequests}>친구 요청 보기</button>
+          <button className="friend-requests-button" onClick={goToFollowListPage}>나를 팔로우한 사람 목록</button>
           <button className="ranking-button" onClick={goToRankingPage}>이웃 랭킹 보기</button>
           <button className="logout-link" onClick={handleLogout}>로그아웃</button>
         </div>
